@@ -5,7 +5,7 @@
 
 ## 👨‍💻 Desenvolvido utilizando
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" height="35px">  •  **NodeJS** &nbsp;&nbsp;&nbsp;&nbsp; | 
-&nbsp;&nbsp;&nbsp;&nbsp; <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original-wordmark.svg" height="35px">  •  **MySQL*
+&nbsp;&nbsp;&nbsp;&nbsp; <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original-wordmark.svg" height="35px">  •  **MySQL**
 
 
 <br>
