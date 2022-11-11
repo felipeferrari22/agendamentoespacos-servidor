@@ -1,6 +1,6 @@
 # Agendamento de Espaços
 
-**Este é o Repositório do Servidor de Agendamento de Espaços, desenvolvido por alunos do Synapse (2022/2)**
+**Este é o Repositório do Servidor de Agendamento de Espaços, desenvolvido por alunos do Synapse (2022/2).**
 
 
 ## 👨‍💻 Desenvolvido utilizando
