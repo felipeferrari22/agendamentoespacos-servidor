@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model usuario {
+  id          Int           @id @default(autoincrement()) //PK
+  nome        String        @unique
+  email       String        @unique
+  empresa     String
+  senha       String
+  solicitacao solicitacao[]
+}
+
+model espaco {
+  id               Int           @id @default(autoincrement()) //PK
+  nome             String        @unique
+  ponto_referencia String
+  descricao        String?
+  solicitacao      solicitacao[]
+}
+
+model solicitacao {
+  numero_solicitacao  Int      @id @default(autoincrement()) //PK
+  status              Int      @unique
+  data_hora           DateTime @unique
+  descricao           String
+  espaco              String   @unique
+  espaco_id           Int
+  usuario_id          Int
+  usuario_perfil      usuario  @relation(fields: [usuario_id], references: [id]) // [FK],[PK do usuario]
+  solicitacao_espaco1 espaco   @relation(fields: [espaco_id], references: [id]) // [FK],[PK do espaco]
+}
+
+model perfil {
+  id   Int    @id @default(autoincrement()) //PK
+  nome String @unique
+}
+
+// model usuario_e_perfil {
+//   usuario_id Int @id @default(autoincrement()) //PK
+//   perfil_id Int @unique
+//   usuario_id usuario_e_perfil @relation(fields: [usuario_id], references: [id])  // [FK],[PK do usuario]
+//   perfil_id usuario_e_perfil @relation(fields: [perfil_id], references: [id])  // [FK],[PK do perfil]
+//   posts Post[]
+// }

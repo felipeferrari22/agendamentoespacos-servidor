@@ -1,0 +1,10 @@
+{
+    "name": "Agendamento de Espaços API",
+    "version": "1.0.0",
+    "description": "",
+    "title": "Agendamento de Espaços API",
+    "url": "http://localhost:3000",
+    "template": {
+        "showRequiredLabels": true
+    }
+}
