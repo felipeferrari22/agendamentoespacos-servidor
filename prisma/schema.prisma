@@ -8,12 +8,13 @@ datasource db {
 }
 
 model usuario {
-  id          Int           @id @default(autoincrement()) //PK
-  nome        String        @unique
-  email       String        @unique
-  empresa     String
-  senha       String
-  solicitacao solicitacao[]
+  id               Int                @id @default(autoincrement()) //PK
+  nome             String             @unique
+  email            String             @unique
+  empresa          String
+  senha            String
+  solicitacao      solicitacao[]
+  usuario_e_perfil usuario_e_perfil[]
 }
 
 model espaco {
@@ -37,14 +38,14 @@ model solicitacao {
 }
 
 model perfil {
-  id   Int    @id @default(autoincrement()) //PK
-  nome String @unique
+  id               Int                @id @default(autoincrement()) //PK
+  nome             String             @unique
+  usuario_e_perfil usuario_e_perfil[]
 }
 
-// model usuario_e_perfil {
-//   usuario_id Int @id @default(autoincrement()) //PK
-//   perfil_id Int @unique
-//   usuario_id usuario_e_perfil @relation(fields: [usuario_id], references: [id])  // [FK],[PK do usuario]
-//   perfil_id usuario_e_perfil @relation(fields: [perfil_id], references: [id])  // [FK],[PK do perfil]
-//   posts Post[]
-// }
+model usuario_e_perfil {
+  usuario_id                     Int     @id @default(autoincrement()) //PK
+  perfil_id                      Int     @unique
+  fk_usuario_has_perfil_usuario1 usuario @relation(fields: [usuario_id], references: [id]) // [FK],[PK do usuario]
+  fk_usuario_has_perfil_perfil1  perfil  @relation(fields: [perfil_id], references: [id]) // [FK],[PK do perfil]
+}
