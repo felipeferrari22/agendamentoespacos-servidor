@@ -8,15 +8,23 @@ datasource db {
 }
 
 model usuario {
-  id               Int                @id @default(autoincrement()) //PK
-  nome             String             @unique
-  email            String             @unique
-  empresa          String
-  senha            String
-  cargo            String
-  telefone         String
-  solicitacao      solicitacao[]
-  usuario_e_perfil usuario_e_perfil[]
+  id          Int           @id @default(autoincrement()) //PK
+  nome        String        @unique
+  email       String        @unique
+  empresa     String
+  senha       String
+  cargo       String
+  telefone    String
+  solicitacao solicitacao[]
+}
+
+model admin {
+  id          Int           @id @default(autoincrement()) //PK
+  nome        String        @unique
+  email       String        @unique
+  empresa     String
+  senha       String
+  solicitacao solicitacao[]
 }
 
 model espaco {
@@ -35,19 +43,8 @@ model solicitacao {
   espaco              String   @unique
   espaco_id           Int
   usuario_id          Int
-  usuario_perfil      usuario  @relation(fields: [usuario_id], references: [id]) // [FK],[PK do usuario]
+  admin_id            Int
   solicitacao_espaco1 espaco   @relation(fields: [espaco_id], references: [id]) // [FK],[PK do espaco]
-}
-
-model perfil {
-  id               Int                @id @default(autoincrement()) //PK
-  nome             String             @unique
-  usuario_e_perfil usuario_e_perfil[]
-}
-
-model usuario_e_perfil {
-  usuario_id                     Int     @id @default(autoincrement()) //PK
-  perfil_id                      Int     @unique
-  fk_usuario_has_perfil_usuario1 usuario @relation(fields: [usuario_id], references: [id]) // [FK],[PK do usuario]
-  fk_usuario_has_perfil_perfil1  perfil  @relation(fields: [perfil_id], references: [id]) // [FK],[PK do perfil]
+  solicitacao_usuario usuario? @relation(fields: [usuario_id], references: [id])
+  solicitacao_admin   admin?   @relation(fields: [admin_id], references: [id])
 }
