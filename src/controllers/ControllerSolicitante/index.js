@@ -3,15 +3,15 @@ const prisma = new PrismaClient()
 const jwt = require('jsonwebtoken')
 
 /**
- * @api {post} /Login Logar Usuario
+ * @api {post} /Login Logar Usuário
  * @apiName LoginUsuario
- * @apiGroup Usuario
+ * @apiGroup Usuário
  * @apiVersion 1.0.0
  * 
- * @apiPermission Nenhum
+ * @apiPermission Usuário
  * 
- * @apiBody {String} email E-mail do usuario
- * @apiBody {String} senha Senha do usuario  
+ * @apiBody {String} email E-mail do usuário
+ * @apiBody {String} senha Senha do usuário  
  * 
  * @apiSuccessExample Exemplo de Sucesso:
  * {

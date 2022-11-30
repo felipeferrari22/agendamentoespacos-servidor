@@ -13,6 +13,8 @@ model usuario {
   email            String             @unique
   empresa          String
   senha            String
+  cargo            String
+  telefone         String
   solicitacao      solicitacao[]
   usuario_e_perfil usuario_e_perfil[]
 }
