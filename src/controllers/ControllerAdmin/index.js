@@ -1,6 +1,5 @@
-const { PrismaClient } = require('@prisma/client')
+const { PrismaClient, Prisma } = require('@prisma/client')
 const prisma = new PrismaClient()
-const jwt = require('jsonwebtoken')
 
 /**
  * @api {post} /CadastroEspaco Cadastro Espaço
@@ -9,6 +8,11 @@ const jwt = require('jsonwebtoken')
  * @apiVersion 1.0.0
  * 
  * @apiPermission Admin
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
  * 
  * @apiBody {String} nome Nome do espaço  
  * @apiBody {String} ponto_referencia Ponto de referência do espaço
@@ -26,19 +30,30 @@ const jwt = require('jsonwebtoken')
 
  const CadastroEspaco = (req, res) => {    
     const main = async () => {
+        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
+
         const {nome, ponto_referencia, descricao} = req.body
-        await prisma.espaco.create({
-            data: {
-                nome: nome,
-                ponto_referencia: ponto_referencia,
-                descricao: descricao,
+        try{
+            await prisma.espaco.create({
+                data: {
+                    nome: nome,
+                    ponto_referencia: ponto_referencia,
+                    descricao: descricao,
+                }
+            })
+        }catch(err){
+            //Erro previsto pelo Prisma -> Linha já existente
+            if(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") { 
+                return res.status(400).send({message: "Espaço já estava cadastrado", error: err})
+            } else {
+                throw err;
             }
-        })
-        res.status(201).send({message: "Espaço Cadastrado"})
+        }
+        return res.status(201).send({message: "Espaço Cadastrado"})
     }
 
     main()
-        .catch((err)=>{res.status(400).send(err); throw err})
+        .catch((err)=>{res.status(400).send({message: "Erro no cadastro do espaço", error: err})})
         .finally(async ()=>{await prisma.$disconnect()})
 }
 
@@ -49,6 +64,11 @@ const jwt = require('jsonwebtoken')
  * @apiVersion 1.0.0
  * 
  * @apiPermission Admin
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
  * 
  * @apiBody {String} nome Nome do solicitante  
  * @apiBody {String} email E-mail do solicitante
@@ -60,33 +80,46 @@ const jwt = require('jsonwebtoken')
  * @apiSuccessExample Exemplo de Sucesso:
  * {
  *  message: "Usuário Cadastrado"
- *  tokenAcesso: [Token de Acesso JWT]
  * }
  * @apiErrorExample Exemplo de Erro:
  * {
- *  message: "Usuário já estava cadastrado"
+ *  message: "Erro no cadastro do usuário",
+ *  error: {errorObject}
  * }
  */
 
 const CadastroUsuario = (req, res) => {    
     const main = async () => {
+        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
+        
         const {email, nome, empresa, senha, cargo, telefone} = req.body
         const {HashPwd} = require('./../../services')
-        await prisma.usuario.create({
-            data: {
-                email: email,
-                nome: nome,
-                empresa: empresa,
-                senha: await HashPwd(senha),
-                cargo: cargo,
-                telefone: telefone,
+        
+        try{
+            await prisma.usuario.create({
+                data: {
+                    email: email,
+                    nome: nome,
+                    empresa: empresa,
+                    senha: await HashPwd(senha),
+                    cargo: cargo,
+                    telefone: telefone,
+                }
+            })
+        }catch(err){
+            //Erro previsto pelo Prisma -> Linha já existente
+            if(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") { 
+                return res.status(400).send({message: "Usuário já estava cadastrado", error: err})
+            } else {
+                throw err;
             }
-        })
-        res.status(201).send({message: "Usuário Cadastrado"})
+        }
+        
+        return res.status(201).send({message: "Usuário Cadastrado"})
     }
 
     main()
-        .catch((err)=>{res.status(400).send(err); throw err})
+        .catch((err)=>{res.status(400).send({message: "Erro no cadastro do usuário", error: err})})
         .finally(async ()=>{await prisma.$disconnect()})
 }
 
@@ -97,6 +130,11 @@ const CadastroUsuario = (req, res) => {
  * @apiVersion 1.0.0
  * 
  * @apiPermission Admin
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
  * 
  * @apiBody {String} nome Nome do administrador  
  * @apiBody {String} email E-mail do administrador
@@ -116,31 +154,98 @@ const CadastroUsuario = (req, res) => {
 
 const CadastroAdmin = (req, res) => {    
     const main = async () => {
+        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
+
         const {email, nome, empresa, senha} = req.body
         const {HashPwd} = require('./../../services')
-        await prisma.admin.create({
-            data: {
-                email: email,
-                nome: nome,
-                empresa: empresa,
-                senha: await HashPwd(senha),
+
+        try{
+            await prisma.admin.create({
+                data: {
+                    email: email,
+                    nome: nome,
+                    empresa: empresa,
+                    senha: await HashPwd(senha),
+                }
+            })
+        }catch(err){
+            //Erro previsto pelo Prisma -> Linha já existente
+            if(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") { 
+                return res.status(400).send({message: "Administrador já estava cadastrado", error: err})
+            } else {
+                throw err;
             }
-        })
-        res.status(201).send({message: "Administrador Cadastrado"})
+        }
+
+        return res.status(201).send({message: "Administrador Cadastrado"})
     }
 
     main()
-        .catch((err)=>{res.status(400).send(err); throw err})
+        .catch((err)=>{res.status(400).send({message: "Erro no cadastro do administrador", error: err})})
         .finally(async ()=>{await prisma.$disconnect()})
 }
 
- /**
- * @api {delete} /DeletarSolicitante Deletar Usuário
+/**
+ * @api {get} /BuscarSolicitantes Buscar Usuários
+ * @apiName Buscar Usuários
+ * @apiGroup Usuário
+ * @apiVersion 1.0.0
+ * 
+ * @apiPermission Admin
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
+ * 
+ * @apiSuccessExample Exemplo de Sucesso:
+ * {
+ *  message: "Busca feita com sucesso",
+ *  usuarios: [{id, nome, empresa, telefone}, ...]
+ * }
+ * @apiErrorExample Exemplo de Erro:
+ * {
+ *  message: "Erro na busca de usuários",
+ *  error: {errorObject}
+ * }
+ */
+const BuscarUsuarios = (req, res) => {
+    const main = async () => {
+        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
+
+        const usuarios = await prisma.usuario.findMany()
+        const dados = usuarios.map((usuarioAtual) => {
+            
+            return {
+                id: usuarioAtual.id,
+                nome: usuarioAtual.nome,
+                empresa: usuarioAtual.empresa,
+                telefone: usuarioAtual.telefone
+            }
+        })
+
+        return res.status(200).send({message: "Busca feita com sucesso", usuarios: dados})
+    }
+
+    main()
+        .catch((err)=>{res.status(400).send({message: "Erro na busca de usuários", error: err})})
+        .finally(async ()=>{await prisma.$disconnect()})
+}
+
+/**
+ * @api {delete} /DeletarSolicitante/:id Deletar Usuário
  * @apiName Deletar Usuário
  * @apiGroup Usuário
  * @apiVersion 1.0.0
  * 
  * @apiPermission Admin
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
+ * 
+ * @apiParam {Number} id id do solicitante
  * 
  * @apiSuccessExample Exemplo de Sucesso:
  * {
@@ -148,12 +253,281 @@ const CadastroAdmin = (req, res) => {
  * }
  * @apiErrorExample Exemplo de Erro:
  * {
- *  message: ""
+ *  message: "Usuário não encontrado"
  * }
  */
+
+const DeletarUsuario = (req, res) => {
+    const main = async () => {
+        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
+
+        const id = req.params.id
+
+        const usuario = await prisma.usuario.findUnique({
+            where: {
+                id: parseInt(id),
+            },
+        })
+        if(usuario === null) return res.status(404).send({message: "Usuário não encontrado"})
+
+        await prisma.usuario.delete({
+            where: {id: parseInt(id)}
+        })
+        
+        return res.status(200).send({message: "Solicitante removido"})
+    }
+    main()
+        .catch((err)=>{res.status(400).send({message: "Erro ao deletar usuário", error: err})})
+        .finally(async ()=>{await prisma.$disconnect()})
+}
+
+/**
+ * @api {get} /BuscarSolicitacoes Buscar Solicitações
+ * @apiName Buscar Solicitações
+ * @apiGroup Solicitações
+ * @apiVersion 1.0.0
+ * 
+ * @apiPermission Admin
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
+ *  
+ * @apiSuccessExample Exemplo de Sucesso:
+ * {
+ *  message: "Busca feita com sucesso",
+ *  usuarios: [{id, data, horario_entrada, horario_saida, status, usuario_nome, usuario_empresa}, ...]
+ * }
+ * @apiErrorExample Exemplo de Erro:
+ * {
+ *  message: "Erro na busca de solicitações",
+ *  error: {errorObject}
+ * }
+ */
+const BuscarSolicitacoes = (req, res) => {
+    const main = async () => {
+        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
+
+        const solicitacoes = await prisma.solicitacao.findMany()
+
+        const dados = await Promise.all(solicitacoes.map(async (solicitacaoAtual) => {
+            
+            const usuario = await prisma.usuario.findUnique({
+                where: {id: parseInt(solicitacaoAtual.usuario_id)}
+            })
+
+            return {
+                id: solicitacaoAtual.numero_solicitacao,
+                data: solicitacaoAtual.data,
+                horario_entrada: solicitacaoAtual.hora_entrada,
+                horario_saida: solicitacaoAtual.horasaida,
+                status: solicitacaoAtual.status,
+                usuario_nome: usuario.nome,
+                usuario_empresa: usuario.empresa
+            }
+        }))
+
+        return res.status(200).send({message: "Busca feita com sucesso", solicitacoes: dados})
+    }
+
+    main()
+        .catch((err)=>{res.status(400).send({message: "Erro na busca de solicitações", error: err})})
+        .finally(async ()=>{await prisma.$disconnect()})
+}
+
+/**
+ * @api {put} /AprovarSolicitacoes/:id Aprovar Solicitação
+ * @apiName Aprovar Solicitação
+ * @apiGroup Solicitações
+ * @apiVersion 1.0.0
+ * 
+ * @apiPermission Admin
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
+ * 
+ * @apiParam {Number} id Número da Solicitação
+ * 
+ * @apiSuccessExample Exemplo de Sucesso:
+ * {
+ *  message: "Solicitação Aprovada"
+ * }
+ * @apiErrorExample Exemplo de Erro:
+ * {
+ *  message: "Erro na aprovação",
+ *  error: {errorObject}
+ * }
+ */
+const AprovarSolicitacoes = (req, res) => {
+    const main = async () => {
+        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
+
+        const id = req.params.id
+
+        //==============================
+
+        // 1# Buscar Agendamentos Aprovados e Solicitação Atual
+        const aprovados = await prisma.solicitacao.findMany({
+            where: {status: "Aprovado"}
+        })
+        const solicitacao = await prisma.solicitacao.findUnique({
+            where: {numero_solicitacao: parseInt(id)}
+        })
+
+        const { ConvHoraMs } = require('../../services')
+        let existeConflito = false
+        
+        // 2# Comparar cada um para verificar choques
+        aprovados.forEach((aprovAtual) => {
+            if(aprovAtual.data === solicitacao.data && aprovAtual.espaco_id === solicitacao.espaco_id) {
+                const hIni_Aprov = ConvHoraMs(aprovAtual.hora_entrada)
+                const hFin_Aprov = ConvHoraMs(aprovAtual.hora_saida)
+                const hIni_Solic = ConvHoraMs(solicitacao.hora_entrada)
+                const hFin_Solic = ConvHoraMs(solicitacao.hora_saida)
+
+                if(hIni_Solic < hFin_Aprov && hFin_Solic > hIni_Aprov) existeConflito = true
+            }
+        })
+
+        if(existeConflito) return res.status(401).send({message: "Horário e Espaço indisponível!"})
+
+        //==============================
+
+        try{
+            await prisma.solicitacao.update({
+                where: {
+                    numero_solicitacao: parseInt(id),
+                },
+                data: {
+                    status: 'Aprovado',
+                },
+            })
+
+        }catch(err){
+            if(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+                return res.status(404).send({message: "Solicitação não encontrada"})
+            } else {
+                throw err;
+            }
+        }
+
+        return res.status(200).send({message: "Solicitação aprovada"})
+    }
+
+    main()
+        .catch((err)=>{res.status(400).send({message: "Erro na aprovação", error: err})})
+        .finally(async ()=>{await prisma.$disconnect()})
+}
+
+/**
+ * @api {delete} /DeletarSolicitacoes/:id Deletar Solicitação
+ * @apiName Deletar Solicitação
+ * @apiGroup Solicitações
+ * @apiVersion 1.0.0
+ * 
+ * @apiPermission Admin
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
+ * 
+ * @apiParam {Number} id Número da Solicitação
+ * 
+ * @apiSuccessExample Exemplo de Sucesso:
+ * {
+ *  message: "Solicitação removida com sucesso"
+ * }
+ * @apiErrorExample Exemplo de Erro:
+ * {
+ *  message: "Erro na remoção da solicitação",
+ *  error: {errorObject}
+ * }
+ */
+const DeletarSolicitacoes = (req, res) => {
+    const main = async () => {
+        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
+
+        const id = req.params.id
+
+        const solicitacao = await prisma.solicitacao.findUnique({
+            where: {
+                numero_solicitacao: parseInt(id),
+            },
+        })
+        if(solicitacao === null) return res.status(404).send({message: "Solicitação não encontrada"})
+
+        await prisma.solicitacao.delete({
+            where: {numero_solicitacao: parseInt(id)}
+        })
+
+        return res.status(200).send({message: "Solicitação removida com sucesso"})
+    }
+
+    main()
+        .catch((err)=>{res.status(400).send({message: "Erro na remoção da solicitação", error: err})})
+        .finally(async ()=>{await prisma.$disconnect()})
+}
+
+/**
+ * @api {get} /BuscarAgendamentos Buscar Agendamentos
+ * @apiName Buscar Agendamentos
+ * @apiGroup Solicitações
+ * @apiVersion 1.0.0
+ * 
+ * @apiPermission Admin
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
+ *  
+ * @apiSuccessExample Exemplo de Sucesso:
+ * {
+ *  message: "Busca feita com sucesso",
+ *  usuarios: [{id, data, horario, espaco, status}, ...]
+ * }
+ * @apiErrorExample Exemplo de Erro:
+ * {
+ *  message: "Erro na busca de agendamentos",
+ *  error: {errorObject}
+ * }
+ */
+const BuscarAgendamentos = (req, res) => {
+    const main = async () => {
+        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
+        const agendamentos = await prisma.solicitacao.findMany({
+            where: {status: "Aprovado"}
+        })
+
+        const dados = agendamentos.map((agendamentoAtual) => {
+            return {
+                data: agendamentoAtual.data,
+                horario: `${agendamentoAtual.hora_entrada} as ${agendamentoAtual.hora_saida}`,
+                espaco: agendamentoAtual.espaco,
+                status: agendamentoAtual.status,
+                id: agendamentoAtual.numero_solicitacao
+            }
+        })
+
+        return res.status(200).send({message: "Busca feita com sucesso", agendamentos: dados})
+    }
+    main()
+        .catch((err)=>{res.status(400).send({message: "Erro na remoção da solicitação", error: err})})
+        .finally(async ()=>{await prisma.$disconnect()})
+}
 
 module.exports = {
     CadastroUsuario,
     CadastroAdmin,
     CadastroEspaco,
+    BuscarUsuarios,
+    DeletarUsuario,
+    BuscarSolicitacoes,
+    AprovarSolicitacoes,
+    DeletarSolicitacoes,
+    BuscarAgendamentos
 }

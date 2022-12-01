@@ -10,10 +10,9 @@ module.exports = (req, res, next) => {
   jwt.verify(
       token,
       process.env.JWT_ACCESS_TOKEN_SECRET,
-      (err, payload) => {
-          if (err) return res.status(403).send({message: "Token negado"})
-          if (payload.exp <= Date.now()) return res.status(410).send({message: "Token expirado"})
-          req.payload = payload
+      (err, dados) => {
+          if(err) return res.status(403).send({message: "Token negado", error: err})
+          req.dados = dados
           next()
       }
   )

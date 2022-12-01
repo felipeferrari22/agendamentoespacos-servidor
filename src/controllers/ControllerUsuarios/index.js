@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken')
  * @apiGroup Usuário
  * @apiVersion 1.0.0
  * 
- * @apiPermission Usuário
+ * @apiPermission Nenhuma
  * 
  * @apiBody {String} email E-mail do usuário
  * @apiBody {String} senha Senha do usuário  
@@ -27,30 +27,55 @@ const jwt = require('jsonwebtoken')
 const LoginUsuario = (req, res) => {    
     const main = async () => {
         const {email, senha} = req.body
-        const { AuthPwd, } = require('./../../services')
+        const { AuthPwd, } = require('../../services')
         
         const usuario = await prisma.usuario.findUnique({
             where: {
-              email: email,
+                email: email,
             },
         })
+        const admin = await prisma.admin.findUnique({
+            where: {
+                email: email,
+            }
+        })
+
         if(usuario) {
             if(await AuthPwd(usuario.senha, senha)) {
                 const dados = {
                     email: usuario.email,
                     nome: usuario.nome,
+                    id: usuario.id,
+                    belongsTo: "SOLICITANTE"
                 }
                 const accessToken= jwt.sign(
                     dados,
                     process.env.JWT_ACCESS_TOKEN_SECRET,
                     {expiresIn: "1d"}
                 )
-                res.status(202).send({accessToken, message: "Login bem-sucedido!"})
+                return res.status(202).send({accessToken, message: "Login bem-sucedido!"})
             } else {
-                res.status(401).send({message: "Senha incorreta"})
+                return res.status(401).send({message: "Senha incorreta"})
             }
-        } else {
-            res.status(404).send({message: "Usuário não cadastrado"})
+        } else if(admin) {
+            if(await AuthPwd(admin.senha, senha)) {
+                const dados = {
+                    email: admin.email,
+                    nome: admin.nome,
+                    id: usuario.id,
+                    belongsTo: "ADMIN"
+                }
+                const accessToken= jwt.sign(
+                    dados,
+                    process.env.JWT_ACCESS_TOKEN_SECRET,
+                    {expiresIn: "1d"}
+                )
+                return res.status(202).send({accessToken, message: "Login bem-sucedido!"})
+            } else {
+                return res.status(401).send({message: "Senha incorreta"})
+            }
+        }else {
+            return res.status(404).send({message: "Usuário não cadastrado"})
         }
     }
 
