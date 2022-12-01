@@ -15,7 +15,6 @@ model usuario {
   senha       String
   cargo       String
   telefone    String
-  solicitacao solicitacao[]
 }
 
 model admin {
@@ -24,7 +23,6 @@ model admin {
   email       String        @unique
   empresa     String
   senha       String
-  solicitacao solicitacao[]
 }
 
 model espaco {
@@ -32,19 +30,16 @@ model espaco {
   nome             String        @unique
   ponto_referencia String
   descricao        String?
-  solicitacao      solicitacao[]
 }
 
 model solicitacao {
   numero_solicitacao  Int      @id @default(autoincrement()) //PK
-  status              Int      @unique
-  data_hora           DateTime @unique
+  status              String      
+  data                String
+  hora_entrada        String
+  hora_saida          String
   descricao           String
-  espaco              String   @unique
+  espaco              String   
   espaco_id           Int
   usuario_id          Int
-  admin_id            Int
-  solicitacao_espaco1 espaco   @relation(fields: [espaco_id], references: [id]) // [FK],[PK do espaco]
-  solicitacao_usuario usuario? @relation(fields: [usuario_id], references: [id])
-  solicitacao_admin   admin?   @relation(fields: [admin_id], references: [id])
 }
