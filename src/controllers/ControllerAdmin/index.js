@@ -323,6 +323,7 @@ const BuscarSolicitacoes = (req, res) => {
                 horario_entrada: solicitacaoAtual.hora_entrada,
                 horario_saida: solicitacaoAtual.horasaida,
                 status: solicitacaoAtual.status,
+                espaco: solicitacaoAtual.espaco,
                 usuario_nome: usuario.nome,
                 usuario_empresa: usuario.empresa
             }
@@ -520,6 +521,101 @@ const BuscarAgendamentos = (req, res) => {
         .finally(async ()=>{await prisma.$disconnect()})
 }
 
+/**
+ * @api {get} /BuscarEspacos Buscar Espaços
+ * @apiName Buscar Espaços
+ * @apiGroup Espaços
+ * @apiVersion 1.0.0
+ * 
+ * @apiPermission Admin
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
+ *  
+ * @apiSuccessExample Exemplo de Sucesso:
+ * {
+ *  message: "Busca feita com sucesso",
+ *  espaco: [{id, nome, ponto_referencia, descricao}, ...]
+ * }
+ * @apiErrorExample Exemplo de Erro:
+ * {
+ *  message: "Erro na busca de espaços",
+ *  error: {errorObject}
+ * }
+ */
+ const BuscarEspacos = (req, res) => {
+    const main = async () => {
+        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
+        const espacos = await prisma.espaco.findMany()
+
+        const dados = espacos.map((espacoAtual) => {
+            return {
+                id: espacoAtual.id,
+                nome: espacoAtual.nome,
+                ponto_referencia: espacoAtual.ponto_referencia,
+                descricao: espacoAtual.descricao,
+            }
+        })
+
+        return res.status(200).send({message: "Busca feita com sucesso", espaco: dados})
+    }
+    main()
+        .catch((err)=>{res.status(400).send({message: "Erro na busca do espaço", error: err})})
+        .finally(async ()=>{await prisma.$disconnect()})
+}
+
+/**
+ * @api {delete} /DeletarEspacos/:id Deletar Espaço
+ * @apiName Deletar Espaço
+ * @apiGroup Espaços
+ * @apiVersion 1.0.0
+ * 
+ * @apiPermission Admin
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
+ * 
+ * @apiParam {Number} id ID do Espaço
+ * 
+ * @apiSuccessExample Exemplo de Sucesso:
+ * {
+ *  message: "Espaço removido com sucesso"
+ * }
+ * @apiErrorExample Exemplo de Erro:
+ * {
+ *  message: "Erro na remoção do espaço",
+ *  error: {errorObject}
+ * }
+ */
+ const DeletarEspacos = (req, res) => {
+    const main = async () => {
+        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
+
+        const id = req.params.id
+
+        const espaco = await prisma.espaco.findUnique({
+            where: {
+                id: parseInt(id),
+            },
+        })
+        if(espaco === null) return res.status(404).send({message: "Espaço não encontrado"})
+
+        await prisma.espaco.delete({
+            where: {id: parseInt(id)}
+        })
+
+        return res.status(200).send({message: "Espaço removido com sucesso"})
+    }
+
+    main()
+        .catch((err)=>{res.status(400).send({message: "Erro na remoção do espaço", error: err})})
+        .finally(async ()=>{await prisma.$disconnect()})
+}
+
 module.exports = {
     CadastroUsuario,
     CadastroAdmin,
@@ -529,5 +625,7 @@ module.exports = {
     BuscarSolicitacoes,
     AprovarSolicitacoes,
     DeletarSolicitacoes,
-    BuscarAgendamentos
+    BuscarAgendamentos,
+    DeletarEspacos,
+    BuscarEspacos
 }

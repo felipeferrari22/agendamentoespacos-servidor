@@ -15,7 +15,9 @@ const {
     BuscarSolicitacoes, 
     AprovarSolicitacoes, 
     DeletarSolicitacoes,
-    BuscarAgendamentos
+    BuscarAgendamentos,
+    DeletarEspacos,
+    BuscarEspacos,
 } = require('./controllers/ControllerAdmin')
 routes.post('/CadastroSolicitante', AuthTokenAcesso, CadastroUsuario)
 routes.post('/CadastroPerfil', AuthTokenAcesso, CadastroAdmin)
@@ -26,6 +28,8 @@ routes.get('/BuscarSolicitacoes', AuthTokenAcesso, BuscarSolicitacoes)
 routes.put('/AprovarSolicitacoes/:id', AuthTokenAcesso, AprovarSolicitacoes)
 routes.delete('/DeletarSolicitacoes/:id', AuthTokenAcesso, DeletarSolicitacoes)
 routes.get('/BuscarAgendamentos', AuthTokenAcesso, BuscarAgendamentos)
+routes.delete('/DeletarEspacos/:id', AuthTokenAcesso, DeletarEspacos)
+routes.get('/BuscarEspacos', AuthTokenAcesso, BuscarEspacos)
 
 const { 
     SolicitarAgendamento,

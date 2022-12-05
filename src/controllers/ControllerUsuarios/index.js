@@ -62,7 +62,7 @@ const LoginUsuario = (req, res) => {
                 const dados = {
                     email: admin.email,
                     nome: admin.nome,
-                    id: usuario.id,
+                    id: admin.id,
                     belongsTo: "ADMIN"
                 }
                 const accessToken= jwt.sign(
