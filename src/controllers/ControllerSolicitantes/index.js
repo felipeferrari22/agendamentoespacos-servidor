@@ -90,7 +90,7 @@ const SolicitarAgendamento = (req, res) =>  {
         if(req.dados.belongsTo !== "SOLICITANTE") return res.status(403).send({message: "Permissão negada [!Solicitante]"})
 
         const agendamentos = await prisma.solicitacao.findMany({
-            where: {usuario_id: parseInt(req.dados.id)}
+            where: {usuario_id: parseInt(req.dados.id)} && {status: "Aprovado"}
         })
 
         const dados = agendamentos.map((agendamentoAtual) => {

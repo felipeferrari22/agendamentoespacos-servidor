@@ -103,7 +103,7 @@ const CadastroUsuario = (req, res) => {
                     empresa: empresa,
                     senha: await HashPwd(senha),
                     cargo: cargo,
-                    telefone: telefone,
+                    telefone: telefone
                 }
             })
         }catch(err){
@@ -124,8 +124,8 @@ const CadastroUsuario = (req, res) => {
 }
 
 /**
- * @api {post} /CadastroAdmin Cadastro Administrador
- * @apiName CadastroAdmin
+ * @api {post} /CadastroPerfil Cadastro Administrador
+ * @apiName CadastroPerfil
  * @apiGroup Administrador
  * @apiVersion 1.0.0
  * 
@@ -140,6 +140,7 @@ const CadastroUsuario = (req, res) => {
  * @apiBody {String} email E-mail do administrador
  * @apiBody {String} empresa Empresa do administrador
  * @apiBody {String} senha Senha do administrador
+ * @apiBody {String} telefone Telefone do administrador
  * 
  * @apiSuccessExample Exemplo de Sucesso:
  * {
@@ -156,7 +157,7 @@ const CadastroAdmin = (req, res) => {
     const main = async () => {
         if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
 
-        const {email, nome, empresa, senha} = req.body
+        const {email, nome, empresa, senha, telefone} = req.body
         const {HashPwd} = require('./../../services')
 
         try{
@@ -166,6 +167,7 @@ const CadastroAdmin = (req, res) => {
                     nome: nome,
                     empresa: empresa,
                     senha: await HashPwd(senha),
+                    telefone: telefone
                 }
             })
         }catch(err){
@@ -309,7 +311,9 @@ const BuscarSolicitacoes = (req, res) => {
     const main = async () => {
         if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
 
-        const solicitacoes = await prisma.solicitacao.findMany()
+        const solicitacoes = await prisma.solicitacao.findMany({
+            where: {status: "Pendente"}
+        })
 
         const dados = await Promise.all(solicitacoes.map(async (solicitacaoAtual) => {
             
@@ -321,7 +325,7 @@ const BuscarSolicitacoes = (req, res) => {
                 id: solicitacaoAtual.numero_solicitacao,
                 data: solicitacaoAtual.data,
                 horario_entrada: solicitacaoAtual.hora_entrada,
-                horario_saida: solicitacaoAtual.horasaida,
+                horario_saida: solicitacaoAtual.hora_saida,
                 status: solicitacaoAtual.status,
                 espaco: solicitacaoAtual.espaco,
                 usuario_nome: usuario.nome,
@@ -522,51 +526,6 @@ const BuscarAgendamentos = (req, res) => {
 }
 
 /**
- * @api {get} /BuscarEspacos Buscar Espaços
- * @apiName Buscar Espaços
- * @apiGroup Espaços
- * @apiVersion 1.0.0
- * 
- * @apiPermission Admin
- * @apiHeader {String} auth Token de acesso JWT
- * @apiHeaderExample {json} Exemplo de Header:
- * {
- *  "auth": [Token de Acesso JWT]
- * }
- *  
- * @apiSuccessExample Exemplo de Sucesso:
- * {
- *  message: "Busca feita com sucesso",
- *  espaco: [{id, nome, ponto_referencia, descricao}, ...]
- * }
- * @apiErrorExample Exemplo de Erro:
- * {
- *  message: "Erro na busca de espaços",
- *  error: {errorObject}
- * }
- */
- const BuscarEspacos = (req, res) => {
-    const main = async () => {
-        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
-        const espacos = await prisma.espaco.findMany()
-
-        const dados = espacos.map((espacoAtual) => {
-            return {
-                id: espacoAtual.id,
-                nome: espacoAtual.nome,
-                ponto_referencia: espacoAtual.ponto_referencia,
-                descricao: espacoAtual.descricao,
-            }
-        })
-
-        return res.status(200).send({message: "Busca feita com sucesso", espaco: dados})
-    }
-    main()
-        .catch((err)=>{res.status(400).send({message: "Erro na busca do espaço", error: err})})
-        .finally(async ()=>{await prisma.$disconnect()})
-}
-
-/**
  * @api {delete} /DeletarEspacos/:id Deletar Espaço
  * @apiName Deletar Espaço
  * @apiGroup Espaços
@@ -616,6 +575,53 @@ const BuscarAgendamentos = (req, res) => {
         .finally(async ()=>{await prisma.$disconnect()})
 }
 
+/**
+ * @api {get} /BuscarAdmins Buscar Administradores
+ * @apiName Buscar Administradores
+ * @apiGroup Admin
+ * @apiVersion 1.0.0
+ * 
+ * @apiPermission Admin
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
+ * 
+ * @apiSuccessExample Exemplo de Sucesso:
+ * {
+ *  message: "Busca feita com sucesso",
+ *  admin: [{id, nome, telefone, email}, ...]
+ * }
+ * @apiErrorExample Exemplo de Erro:
+ * {
+ *  message: "Erro na busca de usuários",
+ *  error: {errorObject}
+ * }
+ */
+ const BuscarAdmins = (req, res) => {
+    const main = async () => {
+        if(req.dados.belongsTo !== "ADMIN") return res.status(403).send({message: "Permissão negada [!Admin]"})
+
+        const admins = await prisma.admin.findMany()
+        const dados = admins.map((adminAtual) => {
+            
+            return {
+                id: adminAtual.id,
+                nome: adminAtual.nome,
+                email: adminAtual.email,
+                telefone: adminAtual.telefone
+            }
+        })
+
+        return res.status(200).send({message: "Busca feita com sucesso", admins: dados})
+    }
+
+    main()
+        .catch((err)=>{res.status(400).send({message: "Erro na busca de usuários", error: err})})
+        .finally(async ()=>{await prisma.$disconnect()})
+}
+
 module.exports = {
     CadastroUsuario,
     CadastroAdmin,
@@ -627,5 +633,5 @@ module.exports = {
     DeletarSolicitacoes,
     BuscarAgendamentos,
     DeletarEspacos,
-    BuscarEspacos
+    BuscarAdmins
 }

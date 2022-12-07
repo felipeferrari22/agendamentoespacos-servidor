@@ -8,38 +8,39 @@ datasource db {
 }
 
 model usuario {
-  id          Int           @id @default(autoincrement()) //PK
-  nome        String        @unique
-  email       String        @unique
-  empresa     String
-  senha       String
-  cargo       String
-  telefone    String
+  id       Int    @id @default(autoincrement()) //PK
+  nome     String @unique
+  email    String @unique
+  empresa  String
+  senha    String
+  cargo    String
+  telefone String
 }
 
 model admin {
-  id          Int           @id @default(autoincrement()) //PK
-  nome        String        @unique
-  email       String        @unique
-  empresa     String
-  senha       String
+  id       Int    @id @default(autoincrement()) //PK
+  nome     String @unique
+  email    String @unique
+  empresa  String
+  senha    String
+  telefone String
 }
 
 model espaco {
-  id               Int           @id @default(autoincrement()) //PK
-  nome             String        @unique
+  id               Int     @id @default(autoincrement()) //PK
+  nome             String  @unique
   ponto_referencia String
   descricao        String?
 }
 
 model solicitacao {
-  numero_solicitacao  Int      @id @default(autoincrement()) //PK
-  status              String      
-  data                String
-  hora_entrada        String
-  hora_saida          String
-  descricao           String
-  espaco              String   
-  espaco_id           Int
-  usuario_id          Int
+  numero_solicitacao Int    @id @default(autoincrement()) //PK
+  status             String
+  data               String
+  hora_entrada       String
+  hora_saida         String
+  descricao          String
+  espaco             String
+  espaco_id          Int
+  usuario_id         Int
 }

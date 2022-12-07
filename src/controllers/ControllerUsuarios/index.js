@@ -53,7 +53,7 @@ const LoginUsuario = (req, res) => {
                     process.env.JWT_ACCESS_TOKEN_SECRET,
                     {expiresIn: "1d"}
                 )
-                return res.status(202).send({accessToken, message: "Login bem-sucedido!"})
+                return res.status(202).send({accessToken, message: "Login bem-sucedido!", tipo: "solicitante"})
             } else {
                 return res.status(401).send({message: "Senha incorreta"})
             }
@@ -70,7 +70,7 @@ const LoginUsuario = (req, res) => {
                     process.env.JWT_ACCESS_TOKEN_SECRET,
                     {expiresIn: "1d"}
                 )
-                return res.status(202).send({accessToken, message: "Login bem-sucedido!"})
+                return res.status(202).send({accessToken, message: "Login bem-sucedido!", tipo: "admin"})
             } else {
                 return res.status(401).send({message: "Senha incorreta"})
             }
@@ -84,6 +84,52 @@ const LoginUsuario = (req, res) => {
         .finally(async ()=>{await prisma.$disconnect()})
 }
 
+/**
+ * @api {get} /BuscarEspacos Buscar Espaços
+ * @apiName Buscar Espaços
+ * @apiGroup Espaços
+ * @apiVersion 1.0.0
+ * 
+ * @apiPermission Admin, Solicitante
+ * @apiHeader {String} auth Token de acesso JWT
+ * @apiHeaderExample {json} Exemplo de Header:
+ * {
+ *  "auth": [Token de Acesso JWT]
+ * }
+ *  
+ * @apiSuccessExample Exemplo de Sucesso:
+ * {
+ *  message: "Busca feita com sucesso",
+ *  espaco: [{id, nome, ponto_referencia, descricao}, ...]
+ * }
+ * @apiErrorExample Exemplo de Erro:
+ * {
+ *  message: "Erro na busca de espaços",
+ *  error: {errorObject}
+ * }
+ */
+ const BuscarEspacos = (req, res) => {
+    const main = async () => {
+        const espacos = await prisma.espaco.findMany()
+
+        const dados = espacos.map((espacoAtual) => {
+            return {
+                id: espacoAtual.id,
+                nome: espacoAtual.nome,
+                ponto_referencia: espacoAtual.ponto_referencia,
+                descricao: espacoAtual.descricao,
+            }
+        })
+
+        return res.status(200).send({message: "Busca feita com sucesso", espaco: dados})
+    }
+    main()
+        .catch((err)=>{res.status(400).send({message: "Erro na busca do espaço", error: err})})
+        .finally(async ()=>{await prisma.$disconnect()})
+}
+
+
 module.exports = {
     LoginUsuario,
+    BuscarEspacos
 }
